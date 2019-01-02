@@ -1,0 +1,53 @@
+.MMM-TAF {
+  Width: 400px;
+}
+
+tr.additional-airport>td {
+  border-top: 1px solid #666;
+  padding-top: 20px;
+}
+
+tr.last-TAF > td {
+  padding-bottom: 20px;
+}
+
+.top-align {
+  vertical-align: top;
+}
+
+.bottom-align {
+  vertical-align: bottom;
+}
+
+.vfr {
+  color: green;
+}
+
+.mvfr {
+  color: blue;
+}
+
+.ifr {
+  color: red;
+}
+
+.lifr {
+  color: #f0f;
+}
+
+.minor-delay {
+  color: yellow;
+}
+
+.major-delay {
+  color: red;
+}
+
+.nodec a, .nodec a:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+.nodec a:hover {
+  text-decoration: underline;
+}
