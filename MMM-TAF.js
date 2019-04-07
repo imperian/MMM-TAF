@@ -3,7 +3,7 @@
  *
  * Based on Aviation Weather Module for MagicMirror2 (MMM-aviationwx)
  * - Displays weather from METAR/TAF reports
- * - Uses avwx.rest for data and includes more data locations (including int'l)
+ * - Uses avwx.rest for data and includes more data location (including int'l)
  *
  *
  * Modified Copyright 2019 Licensed under Apache License, Version 2.0
@@ -29,7 +29,8 @@ Module.register("MMM-TAF", {
   
   // Default module configuration variables
   defaults: {
-    airports: "KPHL,EGLL", // Do not use IATA codes for non-US airports. Use ICAO. 
+    airports: "KPHL,EGLL", // Do not use IATA codes for non-US airports. Use ICAO.
+    airports: "KSFO,PAO,HAF,JFK", // continental U.S. airports only
     updateInterval: 10, // in minutes
   },
 
@@ -97,7 +98,7 @@ Module.register("MMM-TAF", {
 
       var airport = this.tafdata[airportKey]["METAR"]
       // Show Flight Category (VFR, MVFR, IFR, LIFR)
-      var fltcat = airport["Flight-Rules"];
+      var fltcat = airport["flight_rules"];
       var statusCell = document.createElement("td");
       statusCell.className = "bright";
       var statusSpan = document.createElement("span");
@@ -108,7 +109,7 @@ Module.register("MMM-TAF", {
       row.appendChild(statusCell);
 
       // Show Airport Name and any delays
-      var name = airport["Station"];
+      var name = airport["station"];
       var nameCell = document.createElement("td");
       nameCell.className = "bright nodec left-align";
       var tafUrl = "https://aviationweather.gov/taf/data?ids=" + name + "&format=decoded&metars=on&layout=on";
@@ -117,21 +118,14 @@ Module.register("MMM-TAF", {
       row.appendChild(nameCell);
       var today = new Date();
       // Show WX
-      var obsTime = today.getFullYear() + 
-                    "-" + 
-                    (today.getMonth()+1) + 
-                    "-" + 
-                    airport.Time.slice(0,2) + 
-                    " " + 
-                    airport.Time.slice(2,4) + 
-                    ":" + 
-                    airport.Time.slice(4); // yyyy-mm-ddThh:mm:Z
+      var obsTime = airport.time.dt;
       obsTime = obsTime.replace("Z", " +0000");
+      obsTime = obsTime.replace("T", " ");
       var obsTimeMoment = moment(obsTime, "YYYY-MM-DD HH:mm ZZ").local();
-      var summary = airport.Summary;
+      var summary = airport.summary;
       var wxCell = document.createElement("td");
       wxCell.className = "xsmall bottom-align left-align";
-      wxCell.setAttribute("title", airport["Raw-Report"]);
+      wxCell.setAttribute("title", airport["raw"]);
       wxCell.innerHTML = "<b>" + summary + "</b> " +
                          obsTimeMoment.format("[(]HH:mm[)]");
       row.appendChild(wxCell);
@@ -148,16 +142,16 @@ Module.register("MMM-TAF", {
         continue;
       }
       var airport = this.tafdata[airportKey]["TAF"];
-      if (this.tafdata[airportKey]["TAF"]["Forecast"].length > 0)
+      if (this.tafdata[airportKey]["TAF"]["forecast"].length > 0)
       {
-        this.tafdata[airportKey]["TAF"]["Forecast"].forEach( function (item, index) {
+        this.tafdata[airportKey]["TAF"]["forecast"].forEach( function (item, index) {
           
           // Create Table Row
           row = document.createElement("tr");
           row.classList.add("small", "top-align");
 
           // Show Flight Category (VFR, MVFR, IFR, LIFR)
-          var fltcat = item["Flight-Rules"];
+          var fltcat = item["flight_rules"];
           var statusCell = document.createElement("td");
           statusCell.className = "bright";
           var statusSpan = document.createElement("span");
@@ -168,25 +162,13 @@ Module.register("MMM-TAF", {
           row.appendChild(statusCell);
 
           // Show From Time
-          var fromTime = item["Start-Time"];
+          var fromTime = item["start_time"]["repr"];
           var fromDay = fromTime.slice(0,2);
           var fromHour = fromTime.slice(2,4);
-          var obsTime;
           var today = new Date();
-          if (today.getDate() > fromDay)
-          {
-            //New Month
-            if (today.getMonth()+1 >= 12)
-            {
-              //New Year
-              obsTime = (today.getFullYear()+1) + "-01-"
-            } else {
-              obsTime = today.getFullYear() + "-" + (today.getMonth()+2) + "-";
-            }
-          } else {
-            obsTime = today.getFullYear() + "-" + (today.getMonth()+1) + "-";
-          }
-          obsTime += fromDay + " " + fromHour + ":00 +0000";
+          var obsTime = item["start_time"]["dt"];
+          obsTime = obsTime.replace("Z", " +0000");
+          obsTime = obsTime.replace("T", " ");
 
           var obsTimeMoment = moment(obsTime, "YYYY-MM-DD HH:mm ZZ").local();
           console.log("Time: " + fromTime + " ObsTime: " + obsTime + " Local Time: " + obsTimeMoment.format("HH:mm"));
@@ -198,7 +180,7 @@ Module.register("MMM-TAF", {
       
           var wxCell = document.createElement("td");
           wxCell.className = "xsmall bottom-align left-align";
-          wxCell.innerHTML = item["Summary"];
+          wxCell.innerHTML = item["summary"];
           
           row.appendChild(wxCell);
 
