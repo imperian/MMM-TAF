@@ -73,7 +73,6 @@ Module.register("MMM-TAF", {
 
     // Abort if no wx data received
     if (this.tafdata.length < 1) return wrapper;
-    
     // Format data for each airport
     var airportList = this.config.airports.split(",");
     airportList = airportList.map(function (ap) { return ap.trim(); });
@@ -86,6 +85,10 @@ Module.register("MMM-TAF", {
         if (airportKey) notFound += airportKey + " ";
         console.log("Error: " + airportKey + " data not found. " +
                     "Check correct code, or airport has stopped reporting METAR for the day.");
+        continue;
+      }
+      if ("error" in this.tafdata[airportKey]["METAR"]) {
+        console.log("Error: " + this.tafdata[airportKey]["METAR"]["error"]);
         continue;
       }
 
@@ -142,7 +145,7 @@ Module.register("MMM-TAF", {
         continue;
       }
       var airport = this.tafdata[airportKey]["TAF"];
-      if (this.tafdata[airportKey]["TAF"]["forecast"].length > 0)
+      if ("forecast" in this.tafdata[airportKey]["TAF"])
       {
         this.tafdata[airportKey]["TAF"]["forecast"].forEach( function (item, index) {
           
