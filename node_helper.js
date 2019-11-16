@@ -23,6 +23,7 @@ module.exports = NodeHelper.create({
     var airports = payload[0].split(",");
     var METARUrl = payload[1];
     var TAFUrl = payload[2];
+    var Token = payload[3];
     var airportData = new Object();
 
     // Convert to US ICAO codes
@@ -38,7 +39,7 @@ module.exports = NodeHelper.create({
       airportData[airport] = new Object();
       var METARCheckUrl = METARUrl.replace("<IATA_CODE>", airport);
       console.log("Checking URL: " + METARCheckUrl);
-      request({url: METARCheckUrl, method: "GET"}, function (err, rsp, bod) {
+      request({headers: {'Authorization': Token}, url: METARCheckUrl, method: "GET"}, function (err, rsp, bod) {
         if (!err && rsp.statusCode == 200)
         {
           airportData[airport]["METAR"] = JSON.parse(bod);
@@ -56,7 +57,7 @@ module.exports = NodeHelper.create({
 
       var TAFCheckUrl = TAFUrl.replace("<IATA_CODE>", airport);
       console.log("Checking URL: " + TAFCheckUrl);
-      request({url: TAFCheckUrl, method: "GET"}, function (err, rsp, bod) {
+      request({headers: {'Authorization': Token},url: TAFCheckUrl, method: "GET"}, function (err, rsp, bod) {
         if (!err && rsp.statusCode == 200)
         {
           airportData[airport]["TAF"] = JSON.parse(bod);

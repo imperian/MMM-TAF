@@ -236,7 +236,7 @@ Module.register("MMM-TAF", {
   getTAF: function () {
     var metarUrl = "http://avwx.rest/api/metar/<IATA_CODE>?options=summary,translate,info&format=json&onfail=cache"; 
     var TAFUrl = "http://avwx.rest/api/taf/<IATA_CODE>?options=summary&format=json&onfail=cache"; 
-    var payload = [this.config.airports, metarUrl, TAFUrl];
+    var payload = [this.config.airports, metarUrl, TAFUrl, this.config.token];
     this.sendSocketNotification("GET_TAF", payload);
   },
 
