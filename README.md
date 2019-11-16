@@ -29,6 +29,7 @@ modules: [
         position: 'top_left',
         config: {
             airports: 'KPHL,KGLL', // 4-Letter ICAO only. Will convert 3 letter IATA for US only
+            token: 'XXXXXXX', // Token obtained at AVWX.REST
             updateInterval: 10, // update interval in minutes
 		}
 	},
@@ -39,6 +40,7 @@ modules: [
 
 * `position`: See MagicMirror <a href="https://github.com/MichMich/MagicMirror#modules">documentation</a> for usage.
 * `config.airports`: Comma delimited list of 4-character ICAO airport codes. 3-Character US codes should also work.
+* `config.token`: Token for authentication to avwx.rest service. Tokens required as of November 2019.
 * `config.updateInterval`: How often the module will pull new data in minutes. Airports generally only update every 60 minutes. Additionally, because of how the <a href="https://aviationweather.gov">Aviation Weather Center</a> provides METAR data, each update pulls down the data for most airports in the continental U.S., so I suggest going easy on the update frequency.
 
 ## Notes
