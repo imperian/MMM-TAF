@@ -32,6 +32,7 @@ Module.register("MMM-TAF", {
     airports: "KPHL,EGLL", // Do not use IATA codes for non-US airports. Use ICAO.
     airports: "KSFO,PAO,HAF,JFK", // continental U.S. airports only
     updateInterval: 10, // in minutes
+    fadeSpeed: 100,
   },
 
   getScripts: function() {
@@ -243,7 +244,7 @@ Module.register("MMM-TAF", {
   socketNotificationReceived: function(notification, payload) {
     if (notification === "TAF_RESULT") {
       this.tafdata = payload;
-      this.updateDom(self.config.fadeSpeed);
+      this.updateDom(this.config.fadeSpeed);
     }    
   },
 });
