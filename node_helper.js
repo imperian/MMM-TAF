@@ -9,7 +9,6 @@
  */
 
 var NodeHelper = require("node_helper");
-var request = require("request");
 
 module.exports = NodeHelper.create({
   start: function () {
@@ -25,53 +24,78 @@ module.exports = NodeHelper.create({
     var TAFUrl = payload[2];
     var Token = payload[3];
     var airportData = new Object();
+    import("ky").then( ({default:ky}) => {
+	const api = ky.extend({
+	    hooks: {
+		beforeRequest: [
+		    request => {
+			request.headers.set('Authorization', Token);
+		    }
+		]
+	    }
+	});
 
-    // Convert to US ICAO codes
-    airports = airports.map(function(airport) {
-      airport = airport.trim();
-      return (airport.length < 4) ? "K" + airport : airport;
-    });
+	// Convert to US ICAO codes
+	airports = airports.map(function(airport) {
+	    airport = airport.trim();
+	    return (airport.length < 4) ? "K" + airport : airport;
+	});
     
-    // Track number of HTTP requests to be made
-    var numAirports = airports.length * 2;
+	// Track number of HTTP requests to be made
+	var numAirports = airports.length * 2;
 
-    airports.forEach(function(airport, index) {
-      airportData[airport] = new Object();
-      var METARCheckUrl = METARUrl.replace("<IATA_CODE>", airport);
-      console.log("Checking URL: " + METARCheckUrl);
-      request({headers: {'Authorization': Token}, url: METARCheckUrl, method: "GET"}, function (err, rsp, bod) {
-        if (!err && rsp.statusCode == 200)
-        {
-          airportData[airport]["METAR"] = JSON.parse(bod);
-        } else {
-          console.log("Error fetching METAR data for " + airport + ": " + 
-                  err + " (HTTP status: " + rsp.statusCode + ")");
-        }
-        numAirports--;
-        console.log("Airports remaining: " + numAirports);
-        if (numAirports == 0) {
-          self.sendSocketNotification("TAF_RESULT", airportData);
-          console.log("Socket notification sent.");
-        }
-      });
+	airports.forEach(function(airport, index) {
+	    airportData[airport] = new Object();
+	    var METARCheckUrl = METARUrl.replace("<IATA_CODE>", airport);
+	    console.log("Checking URL: " + METARCheckUrl);
+	    api.get(METARCheckUrl).then( (response) => {
+		if (response.status == 200) {
+		    response.json().then( (data) => {
+			airportData[airport]["METAR"] = data;
+			numAirports--;
+			console.log("Airports remaining: " + numAirports);
+			if (numAirports == 0) {
+			    self.sendSocketNotification("TAF_RESULT", airportData);
+			    console.log("Socket notification sent.");
+			}
+		    });
+		} else {
+		    console.log("Error fetching METAR data for " + airport + ": " + "{HTTP status: " + response.status + ")");
+		    numAirports--;
+		    console.log("Airports remaining: " + numAirports);
+		    if (numAirports == 0) {
+			self.sendSocketNotification("TAF_RESULT", airportData);
+			console.log("Socket notification sent.");
+		    }
+		}
+        
+	    }).catch((err)=>{});
 
-      var TAFCheckUrl = TAFUrl.replace("<IATA_CODE>", airport);
-      console.log("Checking URL: " + TAFCheckUrl);
-      request({headers: {'Authorization': Token},url: TAFCheckUrl, method: "GET"}, function (err, rsp, bod) {
-        if (!err && rsp.statusCode == 200)
-        {
-          airportData[airport]["TAF"] = JSON.parse(bod);
-        } else {
-          console.log("Error fetching TAF data for " + airport + ": " + 
-                  err + " (HTTP status: " + rsp.statusCode + ")");
-        }
-        numAirports--;
-        console.log("Airports remaining: " + numAirports);
-        if (numAirports == 0) {
-          self.sendSocketNotification("TAF_RESULT", airportData);
-          console.log("Socket notification sent.");
-        }
-      });
+	    var TAFCheckUrl = TAFUrl.replace("<IATA_CODE>", airport);
+	    console.log("Checking URL: " + TAFCheckUrl);
+	    api.get(TAFCheckUrl).then( (response) => {
+		if (response.status === 200)  {
+		    response.json().then( (data) => {
+			airportData[airport]["TAF"] = data;
+			numAirports--;
+			console.log("Airports remaining: " + numAirports);
+			if (numAirports == 0) {
+			    self.sendSocketNotification("TAF_RESULT", airportData);
+			    console.log("Socket notification sent.");
+			}
+		    });
+		} else {
+		    console.log("Error fetching TAF data for " + airport + ": " + "{HTTP status: " + response.status + ")");
+		    numAirports--;
+		    console.log("Airports remaining: " + numAirports);
+		    if (numAirports == 0) {
+			self.sendSocketNotification("TAF_RESULT", airportData);
+			console.log("Socket notification sent.");
+		    }
+		}
+
+	    }).catch((err)=>{});
+	});
     });
   },
 

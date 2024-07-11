@@ -88,6 +88,11 @@ Module.register("MMM-TAF", {
                     "Check correct code, or airport has stopped reporting METAR for the day.");
         continue;
       }
+
+      if (!("METAR" in this.tafdata[airportKey])) {
+	console.log("Error: missing METAR key in airportKey " + airportKey);
+	continue;
+      }
       if ("error" in this.tafdata[airportKey]["METAR"]) {
         console.log("Error: " + this.tafdata[airportKey]["METAR"]["error"]);
         continue;
